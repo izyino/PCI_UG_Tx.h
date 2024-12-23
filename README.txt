@@ -248,5 +248,5 @@ x.xms=40000(*); while (x.xms>0){enquanto espera 4s, pode fazer coisas…}
 //a variável x.xms começa a ser decrementada a cada um milisegundo imediatamente após ter sido inicializada
 
 ########################################################################################################
-(*) - Esses valores são sempre multiplicados por 10 quando for acesso direto as variáveis da biblioteca
+(*) - Esses valores são sempre multiplicados por 10 quando tratar-se de acesso direto as variáveis da biblioteca
 ########################################################################################################
