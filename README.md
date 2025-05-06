@@ -1,6 +1,7 @@
 Para facilitar o desenvolvimento de aplicações a serem hospedadas nas placas PCI_UG_Tx, foi criada uma biblioteca de nome PCI_UG_Tx.h, disponível em https://github.com/izyino/PCI_UG_Tx.h a qual dispõe funções descritas a seguir.
 --------------------------------------------------------------------------------------------------------
-Desenvolvida por: Antonio Roberto Testa, Junho/2024
+<u>Desenvolvida por: Antonio Roberto Testa, Junho/2024</u>
+
 --------------------------------------------------------------------------------------------------------
 
 #include <PCI_UG_Tx.h>
