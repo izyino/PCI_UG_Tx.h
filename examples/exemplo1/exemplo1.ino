@@ -26,9 +26,9 @@ void loop() {
   x.runDC(3, 2000, 50, 0);    //ativa o motor DC n.3 por 2 segundos, PWM 50%, setido antihorário
 
   if (x.where(0)==0){         //se o motor de passo n.0 já chegou ao seu último destino (está parado)
-    x.runStep(0, 2048, 2, 1); //ativa esse motor para andar 2048 passos, velocodade 2, sentido horário 
+    x.runStep(0, 2048, 12, 1);//ativa esse motor para andar 2048 passos, velocodade 12, sentido horário 
   }
    
-  x.setms(5000);
-  while(x.getms()>0){}        //espera 5 segundos para que os comandos acima terminem e repete tudo 
+  x.setms(6000);
+  while(x.getms()>0){}        //espera 6 segundos para que os comandos acima terminem e repete tudo 
 }
