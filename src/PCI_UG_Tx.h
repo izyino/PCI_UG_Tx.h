@@ -22,19 +22,13 @@ class PCI_UG_Tx {
   uint32_t getms();
   uint32_t where(uint8_t n);
 
-  int bdur=500, binter=500, bfreq=500;
-  volatile int bnum=0;
-
-  int ldur=500, linter=500;
-  volatile int lnum=0;
-
+  volatile int bdur=0, binter=0, bfreq=0, bnum=0;
+  volatile int ldur=0, linter=0, lnum=0;
   volatile uint32_t xms=0;
 
   volatile uint8_t xtipostep[2]={2,2};
   volatile uint32_t   xsteps[2]={0,0};
-  volatile uint32_t xvelstep[2]={0,0};
-  volatile uint32_t   xusnow[2]={0,0};
-  volatile uint32_t   xusult[2]={0,0};
+  volatile uint32_t xvelstep[2]={10,10};
   volatile boolean   xcwstep[2]={1,1};
   volatile int         xfase[2]={0,0};
   volatile uint32_t  xvelnow[2]={0,0};
@@ -42,6 +36,8 @@ class PCI_UG_Tx {
   volatile uint32_t    xtime[4]={0,0,0,0};
   volatile uint32_t   xveldc[4]={50,50,50,50};
   volatile boolean     xcwdc[4]={1,1,1,1};
+
+
 
   private:
 
@@ -65,14 +61,14 @@ class PCI_UG_Tx {
   //variaveis de controle do led
   volatile bool lxpausa=false, lxpri=true;
   volatile int lxinter=0, lxdur=0;
+  uint8_t k;
 
   //variaveis de controle dos step motors
   uint16_t passos[5]={ 0, 2048, 2048, 4096, 200};
   int      ajuste[5]={ 0,   28,   28,   28,-806};
 
-  //variaveis de controle dos motores DC
-  uint8_t pinosdc[4][3]={ {18,19,15}, {16,17,14}, {33,23,25}, {13,27,26} };
-  uint8_t k=0;
+  //pinos associados aos 4 conectores
+  uint8_t pinosdc[4][3]={ {16,17,14}, {18,19,15}, {13,27,25}, {33,23,26} };
 };
 
 
@@ -93,4 +89,3 @@ inline PCI_UG_Tx::isrFunct PCI_UG_Tx::getIsr<0>(uint8_t timerNumber) {
 }
 
 #endif
-

@@ -23,8 +23,8 @@ void  PCI_UG_Tx::begin() {
   digitalWrite(14,0); digitalWrite(15,0); digitalWrite(25,0); digitalWrite(26,0);
   digitalWrite(5,0); digitalWrite(4,0);
 
-  ledcSetup(5, 1000, 8);                             //PWM sempre a 1KHz
   ledcAttachPin(5, 5);                               //define pino 5 channel 5 (beep)
+  ledcSetup(5, 1000, 8);                             //PWM sempre a 1KHz
   ledcWrite(5, 0);                                   //grava 0 nele (silencia)
 
   const uint8_t timerNumber = 0;
@@ -41,46 +41,39 @@ void  PCI_UG_Tx::begin() {
 //----------------------------------------------------------------------
 void  PCI_UG_Tx::runStep(uint8_t n, uint32_t steps, uint8_t velstep, boolean cwstep)
 {
-  xsteps[n]=steps;
-  xvelnow[n]=velstep;
+  if ((xtipostep[n]!=0)){xvelstep[n]=600000L/passos[xtipostep[n]]/velstep;}
+  xvelnow[n]=xvelstep[n];
   xcwstep[n]=cwstep;
-  if ((n==0)||(n==1)){xvelstep[n]=60L*1000L*1000L/passos[xtipostep[0]]/velstep-ajuste[xtipostep[0]];}
-  if ((n==2)||(n==3)){xvelstep[n]=60L*1000L*1000L/passos[xtipostep[1]]/velstep-ajuste[xtipostep[1]];}
   if (xcwstep[n]){xfase[n]=-1;}
   if (!xcwstep[n]){xfase[n]=4; if (xtipostep[n]==3){xfase[n]=8;}}
   if (n==0){digitalWrite(14,1);digitalWrite(15,1);}
   if (n==1){digitalWrite(25,1);digitalWrite(26,1);}
+  xsteps[n]=steps;
 }
 
 
 //----------------------------------------------------------------------
 void  PCI_UG_Tx::runDC(uint8_t n, uint32_t time, uint8_t veldc, boolean cwdc)
 {
-  xtime[n]=time*10;
   xveldc[n]=veldc;
   xcwdc[n]=cwdc;
-  
-  if (n==1){
-    ledcSetup(1, 1000, 8);                             //PWM sempre a 1KHz
-    ledcAttachPin(14, 1);                              //se motor DC em CN1, define channel 1 pino 14 (motor DC 1)
-  }
 
-  if (n==0){
+  if (xtipostep[0]==0){
+    ledcAttachPin(14, 0);                              //se motor DC em CN1, define channel 0 pino 14 (motor DC 0)
     ledcSetup(0, 1000, 8);                             //PWM sempre a 1KHz
-    ledcAttachPin(15, 0);                              //define channel 0 pino 15 (motor DC 0)
+    ledcAttachPin(15, 1);                              //define channel 1 pino 15 (motor DC 1)
+    ledcSetup(1, 1000, 8);                             //PWM sempre a 1KHz
   }
 
-  if (n==3){
-    ledcSetup(3, 1000, 8);                             //PWM sempre a 1KHz
-    ledcAttachPin(25, 3);                              //se motor DC em CN2, define channel 3 pino 25 (motor DC 3)
-  } 
-
-  if (n==2){    
+  if (xtipostep[1]==0){
+    ledcAttachPin(25, 2);                              //se motor DC em CN1, define channel 2 pino 25 (motor DC 2)
     ledcSetup(2, 1000, 8);                             //PWM sempre a 1KHz
-    ledcAttachPin(26, 2);                              //define channel 2 pino 26 (motor DC 2)
+    ledcAttachPin(26, 3);                              //define channel 3 pino 26 (motor DC 3)
+    ledcSetup(3, 1000, 8);                             //PWM sempre a 1KHz
   }
 
   ledcWrite(n, int(float(xveldc[n])/100.0*255.0));
+  xtime[n]=time;
 }
 
 
@@ -94,14 +87,14 @@ uint32_t  PCI_UG_Tx::where(uint8_t n)
 //----------------------------------------------------------------------
 void  PCI_UG_Tx::beep(int xbnum, int xbdur, int xbfreq, int xbinter)
 {
-  bnum=xbnum; bdur=xbdur*10; bfreq=xbfreq; binter=xbinter*10;
+  bdur=xbdur*10; bfreq=xbfreq; binter=xbinter*10; bnum=xbnum; 
 }
 
 
 //----------------------------------------------------------------------
 void  PCI_UG_Tx::led(int xlnum, int xldur, int xlinter)
 {
-  lnum=xlnum; ldur=xldur*10; linter=xlinter*10;
+  ldur=xldur*10; linter=xlinter*10; lnum=xlnum; 
 }
 
 
@@ -156,10 +149,9 @@ void IRAM_ATTR  PCI_UG_Tx::onTimer100us()
   if ((xsteps[0]>0)||(xsteps[1]>0)){
     for (k=0; k<2; k++){
       if (xsteps[k]>0){
-        xusnow[k]=micros();
-        xvelnow[k]=xusnow[k]-xusult[k];
-        if (xvelnow[k]>=xvelstep[k]){
-          xusult[k]=xusnow[k];
+        xvelnow[k]--;
+        if (xvelnow[k]==0){
+          xvelnow[k]=xvelstep[k];
           int nf=3;if (xtipostep[k]==3){nf=7;}
           if (xcwstep[k]){xfase[k]++;if (xfase[k]>nf){xfase[k]=0;}}else{xfase[k]--;if (xfase[k]<0){xfase[k]=nf;}}
           PCI_UG_Tx::go();
@@ -185,7 +177,6 @@ void IRAM_ATTR  PCI_UG_Tx::onTimer100us()
   }
 
 
-  //processa os beeps-----------------------------------------------------------------------------------
   if (bnum>0){
     if (bxpri){                           //if is the beginning of cycle to beep,
       bxinter=binter+1; bxdur=bdur;       //init the time variables
@@ -208,7 +199,6 @@ void IRAM_ATTR  PCI_UG_Tx::onTimer100us()
   }
 
 
-  //processa as piscadas do led--------------------------------------------------------------------------
   if (lnum>0){
     if (lxpri){                           //if is the beginning of cycle to blink led,
       lxinter=linter+1; lxdur=ldur;       //init the time variables
@@ -230,7 +220,6 @@ void IRAM_ATTR  PCI_UG_Tx::onTimer100us()
   }
 
 }
-
 
  PCI_UG_Tx * PCI_UG_Tx::isrTable[SOC_TIMER_GROUP_TOTAL_TIMERS];
 
